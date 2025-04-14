@@ -3,8 +3,28 @@ package jdh.lr.YandexContests.BackendSchool2025.Medium;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Set;
 
-public class SatelliteImagery {
+public class SatelliteImagery{
+    static class Point {
+        int x, y;
+        Point(int x, int y) { this.x = x; this.y = y; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Point point = (Point) o;
+            return x == point.x && y == point.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * x + y;
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String[] firstLine = br.readLine().split(" ");
@@ -12,8 +32,7 @@ public class SatelliteImagery {
         int H = Integer.parseInt(firstLine[1]);
         int N = Integer.parseInt(br.readLine());
 
-        int minX = 0, maxX = 0, minY = 0, maxY = 0;
-        boolean first = true;
+        Set<Point> prevPoints = new HashSet<>();
         boolean possible = true;
 
         for (int i = 0; i < N; i++) {
@@ -23,38 +42,37 @@ public class SatelliteImagery {
             int x2 = Integer.parseInt(s[2]);
             int y2 = Integer.parseInt(s[3]);
 
-            if (first) {
-                minX = x1;
-                maxX = x2;
-                minY = y1;
-                maxY = y2;
-                first = false;
+            Set<Point> currentPoints = new HashSet<>();
+            for (int x = x1; x <= x2; x++) {
+                for (int y = y1; y <= y2; y++) {
+                    currentPoints.add(new Point(x, y));
+                }
+            }
+
+            if (i == 0) {
+                prevPoints = currentPoints;
                 continue;
             }
 
-            int newMinX = Math.max(x1, minX - 1);
-            int newMaxX = Math.min(x2, maxX + 1);
-            int newMinY = Math.max(y1, minY);
-            int newMaxY = Math.min(y2, maxY);
+            Set<Point> reachable = new HashSet<>();
+            for (Point p : currentPoints) {
+                for (Point prev : prevPoints) {
+                    if ((Math.abs(p.x - prev.x) == 1 && p.y == prev.y) ||
+                            (Math.abs(p.y - prev.y) == 1 && p.x == prev.x)) {
+                        reachable.add(p);
+                        break;
+                    }
+                }
+            }
+            for (Point p : reachable) {
+                System.out.println(p.x + " " + p.y);
+            }
 
-            boolean verticalPossible = (newMinX <= newMaxX) && (newMinY <= newMaxY);
-
-            newMinX = Math.max(x1, minX);
-            newMaxX = Math.min(x2, maxX);
-            newMinY = Math.max(y1, minY - 1);
-            newMaxY = Math.min(y2, maxY + 1);
-
-            boolean horizontalPossible = (newMinX <= newMaxX) && (newMinY <= newMaxY);
-
-            if (!verticalPossible && !horizontalPossible) {
+            if (reachable.isEmpty()) {
                 possible = false;
                 break;
             }
-
-            minX = Math.max(x1, minX - 1);
-            maxX = Math.min(x2, maxX + 1);
-            minY = Math.max(y1, minY - 1);
-            maxY = Math.min(y2, maxY + 1);
+            prevPoints = reachable;
         }
 
         System.out.println(possible ? "YES" : "NO");
