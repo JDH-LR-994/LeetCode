@@ -64,9 +64,6 @@ public class SatelliteImagery{
                     }
                 }
             }
-            for (Point p : reachable) {
-                System.out.println(p.x + " " + p.y);
-            }
 
             if (reachable.isEmpty()) {
                 possible = false;
